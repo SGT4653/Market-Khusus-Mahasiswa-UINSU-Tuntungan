@@ -59,10 +59,10 @@ form.addEventListener('submit', async function(event) {
     message.textContent = 'Sedang login...';
 
     try {
-        const { data, error } = await db.auth.signInWithPassword({
-            email,
-            password
-        });
+        const { data, error } = await window.db.auth.signInWithPassword({
+    email: email,
+    password: password
+    });
 
         if (error) throw error;
 
