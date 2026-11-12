@@ -512,3 +512,52 @@ button, .btn {
 button:hover, .btn:hover {
     background: #1da45f !important;
 }
+
+/* HERO SECTION - DARK GREEN */
+.hero {
+    background: #0b1711 !important;
+    color: #f1f5f2 !important;
+}
+
+.hero h1,
+.hero h2,
+.hero h3,
+.hero p,
+.hero strong,
+.hero b,
+.hero a {
+    color: #f1f5f2 !important;
+}
+
+.hero em,
+.hero span {
+    color: #70d99b;
+}
+
+.hero a {
+    background: #16834c;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.hero a:hover {
+    background: #1da45f;
+}
+
+/* TIPS TRANSAKSI AMAN */
+.tips-aman {
+    background: #14251c !important;
+    color: #e5eee8 !important;
+    border: 1px solid #294536;
+    border-radius: 12px;
+    padding: 18px;
+}
+
+.tips-aman h3,
+.tips-aman h4,
+.tips-aman p,
+.tips-aman strong {
+    color: #e5eee8 !important;
+}
