@@ -1,0 +1,212 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Barang Saya | KampusMart</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="top">
+    <a class="brand" href="index.html">Kampus<span>Mart</span></a>
+    <nav>
+        <a href="index.html">Beranda</a>
+        <a href="product-create.html">+ Jual Barang</a>
+        <a href="#" id="logoutButton">Keluar</a>
+    </nav>
+</header>
+
+<main class="form-page">
+    <div class="heading-row">
+        <div>
+            <span class="kicker">DASHBOARD PENJUAL</span>
+            <h1>Barang saya</h1>
+            <p class="muted" id="greeting">Memuat akun...</p>
+        </div>
+        <a class="btn" href="product-create.html">+ Jual Barang</a>
+    </div>
+
+    <div id="message"></div>
+    <div class="my-list" id="productList">
+        <p class="muted">Memuat barang...</p>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase.js"></script>
+
+<script>
+const list = document.getElementById('productList');
+const message = document.getElementById('message');
+
+function escapeHTML(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    })[char]);
+}
+
+function rupiah(value) {
+    return 'Rp' + Number(value || 0).toLocaleString('id-ID');
+}
+
+function photoURL(photo) {
+    if (!photo) return '';
+
+    if (photo.startsWith('http://') ||
+        photo.startsWith('https://')) {
+        return photo;
+    }
+
+    return db.storage.from('produk').getPublicUrl(photo).data.publicUrl;
+}
+
+async function loadMyProducts() {
+    try {
+        const { data: sessionData } = await db.auth.getSession();
+        const user = sessionData.session?.user;
+
+        if (!user) {
+            window.location.replace('login.html');
+            return;
+        }
+
+        document.getElementById('greeting').textContent =
+            'Halo, ' + (user.user_metadata?.name || user.email);
+
+        const { data, error } = await db
+            .from('products')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data.length) {
+            list.innerHTML = `
+                <div class="empty">
+                    <span>📦</span>
+                    <h3>Belum ada barang</h3>
+                    <a class="btn" href="product-create.html">
+                        Pasang barang pertama
+                    </a>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = data.map(p => {
+            const photo = photoURL(p.photo);
+            const nextStatus = p.status === 'Tersedia'
+                ? 'Terjual' : 'Tersedia';
+
+            return `
+                <article class="my-item">
+                    <div class="my-thumb">
+                        ${photo
+                            ? `<img src="${escapeHTML(photo)}" alt=""
+                                loading="lazy">`
+                            : '<span>📦</span>'}
+                    </div>
+
+                    <div class="my-info">
+                        <span class="pill">${escapeHTML(p.status)}</span>
+                        <h3>${escapeHTML(p.title)}</h3>
+                        <b class="price">${rupiah(p.price)}</b>
+                        <small>${escapeHTML(p.category)}</small>
+                        <a href="product.html?id=${encodeURIComponent(p.id)}">
+                            Lihat detail
+                        </a>
+                    </div>
+
+                    <div class="actions">
+                        <a class="mini-btn"
+                           href="product-edit.html?id=${encodeURIComponent(p.id)}">
+                            Edit
+                        </a>
+
+                        <button class="mini-btn status-btn"
+                            data-id="${p.id}"
+                            data-status="${nextStatus}">
+                            ${p.status === 'Tersedia'
+                                ? 'Tandai Terjual' : 'Aktifkan'}
+                        </button>
+
+                        <button class="mini-btn danger delete-btn"
+                            data-id="${p.id}">
+                            Hapus
+                        </button>
+                    </div>
+                </article>
+            `;
+        }).join('');
+
+    } catch (error) {
+        message.textContent = 'Gagal memuat barang: ' + error.message;
+    }
+}
+
+list.addEventListener('click', async function(event) {
+    const statusButton = event.target.closest('.status-btn');
+    const deleteButton = event.target.closest('.delete-btn');
+
+    try {
+        if (statusButton) {
+            const id = statusButton.dataset.id;
+            const status = statusButton.dataset.status;
+
+            const { error } = await db
+                .from('products')
+                .update({ status })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            message.textContent = 'Status barang berhasil diperbarui.';
+            await loadMyProducts();
+        }
+
+        if (deleteButton) {
+            const id = deleteButton.dataset.id;
+
+            if (!confirm('Yakin menghapus barang ini?')) return;
+
+            const { error } = await db
+                .from('products')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            message.textContent = 'Barang berhasil dihapus.';
+            await loadMyProducts();
+        }
+
+    } catch (error) {
+        message.textContent = 'Gagal: ' + error.message;
+    }
+});
+
+document.getElementById('logoutButton')
+    .addEventListener('click', async function(event) {
+        event.preventDefault();
+        const { error } = await db.auth.signOut();
+
+        if (error) {
+            message.textContent = error.message;
+            return;
+        }
+
+        window.location.replace('index.html');
+    });
+
+loadMyProducts();
+</script>
+
+</body>
+</html>

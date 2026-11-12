@@ -1,0 +1,248 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Detail Barang | KampusMart</title>
+
+    <link rel="stylesheet" href="assets/style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/supabase.js"></script>
+</head>
+<body>
+
+<header class="top">
+    <a class="brand" href="index.html">Kampus<span>Mart</span></a>
+
+    <nav id="navbar">
+        <a href="index.html">Beranda</a>
+        <a href="login.html">Login</a>
+    </nav>
+</header>
+
+<main class="detail">
+    <a href="index.html">← Kembali ke marketplace</a>
+
+    <div id="message"></div>
+
+    <div class="detail-grid" id="productDetail" hidden>
+        <div class="detail-img" id="productImage">
+            <span>📦</span>
+        </div>
+
+        <section>
+            <span class="pill" id="category"></span>
+            <span class="pill" id="status"></span>
+
+            <h1 id="title"></h1>
+
+            <strong class="detail-price" id="price"></strong>
+
+            <p class="muted">
+                Kondisi: <span id="condition"></span>
+            </p>
+
+            <hr>
+
+            <h3>Deskripsi</h3>
+            <p class="description" id="description"></p>
+
+            <p>
+                Penjual: <b id="sellerName"></b>
+            </p>
+
+            <div id="action"></div>
+
+            <p class="muted">
+                Periksa barang sebelum membayar dan pilih tempat
+                bertemu yang aman. Transaksi dilakukan langsung
+                antara pembeli dan penjual.
+            </p>
+        </section>
+    </div>
+</main>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const productId = params.get('id');
+
+const messageBox = document.getElementById('message');
+const detail = document.getElementById('productDetail');
+
+function showMessage(text) {
+    messageBox.innerHTML = '';
+
+    const box = document.createElement('div');
+    box.className = 'error';
+    box.textContent = text;
+
+    messageBox.appendChild(box);
+}
+
+function formatRupiah(value) {
+    return 'Rp' + Number(value).toLocaleString('id-ID');
+}
+
+function getPhotoUrl(path) {
+    if (!path) return null;
+
+    const { data } = db.storage
+        .from('produk')
+        .getPublicUrl(path);
+
+    return data.publicUrl;
+}
+
+function createLink(text, href, className) {
+    const link = document.createElement('a');
+    link.textContent = text;
+    link.href = href;
+    link.className = className;
+    return link;
+}
+
+async function loadProduct() {
+    try {
+        if (!productId || !/^\d+$/.test(productId)) {
+            throw new Error('Barang tidak ditemukan.');
+        }
+
+        const { data: authData } = await db.auth.getUser();
+        const user = authData?.user || null;
+
+        const { data: product, error } = await db
+            .from('products')
+            .select(`
+                *,
+                profiles (
+                    name,
+                    phone
+                )
+            `)
+            .eq('id', productId)
+            .single();
+
+        if (error || !product) {
+            throw new Error('Barang tidak ditemukan.');
+        }
+
+        const owner = user && user.id === product.user_id;
+        const statusProduk = product.status || 'Tersedia';
+
+        document.title = product.title + ' | KampusMart';
+
+        document.getElementById('title').textContent = product.title;
+        document.getElementById('category').textContent = product.category;
+        document.getElementById('status').textContent = statusProduk;
+        document.getElementById('price').textContent = formatRupiah(product.price);
+        document.getElementById('condition').textContent = product.condition || '-';
+        document.getElementById('description').textContent = product.description || '';
+        document.getElementById('sellerName').textContent =
+            product.profiles?.name || 'Penjual';
+
+        const imageContainer = document.getElementById('productImage');
+
+        if (product.photo) {
+            const image = document.createElement('img');
+            image.src = getPhotoUrl(product.photo);
+            image.alt = product.title;
+            image.onerror = () => {
+                imageContainer.innerHTML = '<span>📦</span>';
+            };
+
+            imageContainer.innerHTML = '';
+            imageContainer.appendChild(image);
+        }
+
+        const action = document.getElementById('action');
+        action.innerHTML = '';
+
+        if (owner) {
+            const editLink = createLink(
+                'Edit barang saya',
+                'product-edit.html?id=' + encodeURIComponent(product.id),
+                'btn'
+            );
+
+            action.appendChild(editLink);
+
+        } else if (statusProduk === 'Tersedia') {
+            const phone = (product.profiles?.phone || '').replace(/\D/g, '');
+
+            if (phone) {
+                // Format nomor Indonesia untuk tautan WhatsApp.
+                const wa = phone.startsWith('0')
+                    ? '62' + phone.substring(1)
+                    : phone;
+
+                const text = encodeURIComponent(
+                    'Halo, saya tertarik dengan barang ' +
+                    product.title +
+                    ' di KampusMart. Apakah masih tersedia?'
+                );
+
+                const waLink = createLink(
+                    'Hubungi via WhatsApp',
+                    'https://wa.me/' + wa + '?text=' + text,
+                    'btn whatsapp'
+                );
+
+                waLink.target = '_blank';
+                waLink.rel = 'noopener noreferrer';
+
+                action.appendChild(waLink);
+            } else {
+                const warning = document.createElement('p');
+                warning.className = 'muted';
+                warning.textContent = 'Nomor WhatsApp penjual belum tersedia.';
+                action.appendChild(warning);
+            }
+
+        } else {
+            const soldButton = document.createElement('button');
+            soldButton.className = 'btn';
+            soldButton.disabled = true;
+            soldButton.textContent = 'Barang sudah terjual';
+
+            action.appendChild(soldButton);
+        }
+
+        const navbar = document.getElementById('navbar');
+        navbar.innerHTML = '';
+
+        const homeLink = createLink('Beranda', 'index.html', '');
+        navbar.appendChild(homeLink);
+
+        if (user) {
+            navbar.appendChild(
+                createLink('Barang Saya', 'my-products.html', '')
+            );
+
+            const logoutLink = createLink('Keluar', '#', '');
+            logoutLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await db.auth.signOut();
+                window.location.href = 'index.html';
+            });
+
+            navbar.appendChild(logoutLink);
+        } else {
+            navbar.appendChild(
+                createLink('Login', 'login.html', '')
+            );
+        }
+
+        detail.hidden = false;
+
+    } catch (error) {
+        showMessage(error.message || 'Gagal memuat detail barang.');
+    }
+}
+
+loadProduct();
+</script>
+
+</body>
+</html>

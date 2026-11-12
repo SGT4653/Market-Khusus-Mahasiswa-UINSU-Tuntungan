@@ -1,0 +1,266 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>KampusMart | Marketplace Mahasiswa UINSU</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="top">
+    <a class="brand" href="index.html">
+        Kampus<span>Mart</span>
+        <small>Marketplace Mahasiswa UINSU</small>
+    </a>
+
+    <nav id="navbar">
+        <a href="index.html">Beranda</a>
+        <a href="login.html">Login</a>
+        <a class="navbtn" href="register.html">Daftar Gratis</a>
+    </nav>
+</header>
+
+<main>
+<section class="hero">
+    <div>
+        <span class="kicker">MARKETPLACE MAHASISWA UINSU</span>
+        <h1>Barang bagus,<br><em>harga mahasiswa.</em></h1>
+        <p>
+            Jual barang yang tidak terpakai dan temukan
+            kebutuhan kuliah atau kos dengan harga terjangkau.
+        </p>
+        <a class="btn" id="sellButton" href="register.html">
+            Mulai Jual Barang →
+        </a>
+    </div>
+
+    <div class="hero-graphic">
+        <span>🛍️</span>
+        <b>Belanja lebih hemat</b>
+        <small>Hubungi penjual langsung melalui WhatsApp</small>
+    </div>
+</section>
+
+<section class="market">
+    <div class="section-title">
+        <div>
+            <span class="kicker">JELAJAHI</span>
+            <h2>Temukan barangmu</h2>
+            <p class="muted">Cari barang dari sesama mahasiswa.</p>
+        </div>
+    </div>
+
+    <form class="search" id="searchForm">
+        <input type="search" id="searchInput"
+            placeholder="Cari buku, elektronik, perlengkapan kos...">
+
+        <select id="categorySelect">
+            <option value="">Semua kategori</option>
+            <option value="Buku">Buku</option>
+            <option value="Elektronik">Elektronik</option>
+            <option value="Fashion">Fashion</option>
+            <option value="Perlengkapan Kos">Perlengkapan Kos</option>
+            <option value="Alat Tulis">Alat Tulis</option>
+            <option value="Lainnya">Lainnya</option>
+        </select>
+
+        <button class="btn" type="submit">Cari</button>
+    </form>
+
+    <p class="muted" id="productCount">Memuat barang...</p>
+
+    <div class="grid" id="productGrid"></div>
+</section>
+
+<section class="safety">
+    <b>🛡️ Tips transaksi aman</b>
+    <p>
+        Periksa barang sebelum membayar, bertemu di tempat umum,
+        dan jangan transfer sebelum yakin dengan penjual.
+    </p>
+</section>
+</main>
+
+<footer>
+    © <span id="year"></span> KampusMart · Komunitas mahasiswa
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase.js"></script>
+<script src="assets/app.js"></script>
+
+<script>
+const grid = document.getElementById('productGrid');
+const count = document.getElementById('productCount');
+const searchForm = document.getElementById('searchForm');
+const searchInput = document.getElementById('searchInput');
+const categorySelect = document.getElementById('categorySelect');
+
+document.getElementById('year').textContent =
+    new Date().getFullYear();
+
+function escapeHTML(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    })[char]);
+}
+
+function formatRupiah(value) {
+    return 'Rp' + Number(value || 0).toLocaleString('id-ID');
+}
+
+function getPhoto(photo) {
+    if (!photo) return '';
+
+    if (photo.startsWith('http://') ||
+        photo.startsWith('https://')) {
+        return photo;
+    }
+
+    return db.storage.from('produk').getPublicUrl(photo).data.publicUrl;
+}
+
+async function loadProducts() {
+    grid.innerHTML = '';
+    count.textContent = 'Memuat barang...';
+
+    try {
+        let query = db
+            .from('products')
+            .select('*, profiles(name)')
+            .eq('status', 'Tersedia')
+            .order('created_at', { ascending: false })
+            .limit(100);
+
+        const keyword = searchInput.value.trim();
+        const category = categorySelect.value;
+
+        if (keyword) {
+            const safeKeyword = keyword.replace(/[,%()]/g, '');
+            query = query.or(
+                `title.ilike.%${safeKeyword}%,description.ilike.%${safeKeyword}%`
+            );
+        }
+
+        if (category) {
+            query = query.eq('category', category);
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+
+        count.textContent = `${data.length} barang ditemukan`;
+
+        if (!data.length) {
+            grid.innerHTML = `
+                <div class="empty">
+                    <span>🔎</span>
+                    <h3>Belum ada barang yang cocok</h3>
+                    <p>Coba kata kunci lain atau pasang barang pertama.</p>
+                    <a class="btn" href="register.html">Pasang Barang</a>
+                </div>
+            `;
+            return;
+        }
+
+        data.forEach(p => {
+            const photoURL = getPhoto(p.photo);
+            const seller = p.profiles?.name || 'Mahasiswa';
+            const condition = p.condition || 'Bekas';
+
+            const card = document.createElement('article');
+            card.className = 'card';
+
+            card.innerHTML = `
+                <a class="photo" href="product.html?id=${encodeURIComponent(p.id)}">
+                    ${photoURL
+                        ? `<img src="${escapeHTML(photoURL)}"
+                            alt="${escapeHTML(p.title)}"
+                            loading="lazy">`
+                        : '<span>📦</span>'}
+                    <small>${escapeHTML(p.category)}</small>
+                </a>
+
+                <div class="card-body">
+                    <small class="muted">${escapeHTML(condition)}</small>
+
+                    <h3>
+                        <a href="product.html?id=${encodeURIComponent(p.id)}">
+                            ${escapeHTML(p.title)}
+                        </a>
+                    </h3>
+
+                    <strong class="price">
+                        ${formatRupiah(p.price)}
+                    </strong>
+
+                    <p class="seller">
+                        Penjual: ${escapeHTML(seller)}
+                    </p>
+
+                    <a class="card-more"
+                        href="product.html?id=${encodeURIComponent(p.id)}">
+                        Lihat detail →
+                    </a>
+                </div>
+            `;
+
+            grid.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error(error);
+        count.textContent = 'Gagal memuat barang.';
+        grid.innerHTML = `
+            <div class="empty">
+                <h3>Terjadi kesalahan</h3>
+                <p>Periksa koneksi Supabase dan pengaturan database.</p>
+            </div>
+        `;
+    }
+}
+
+searchForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+    loadProducts();
+});
+
+async function updateNavbar() {
+    const { data } = await db.auth.getSession();
+    const user = data.session?.user;
+
+    const navbar = document.getElementById('navbar');
+    const sellButton = document.getElementById('sellButton');
+
+    if (user) {
+        navbar.innerHTML = `
+            <a href="index.html">Beranda</a>
+            <a href="my-products.html">Barang Saya</a>
+            <a class="navbtn" href="product-create.html">+ Jual Barang</a>
+            <a href="#" id="logoutButton">Keluar</a>
+        `;
+
+        sellButton.href = 'product-create.html';
+
+        document.getElementById('logoutButton')
+            .addEventListener('click', async function(event) {
+                event.preventDefault();
+                await db.auth.signOut();
+                window.location.reload();
+            });
+    }
+}
+
+updateNavbar();
+loadProducts();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Logout | KampusMart</title>
+</head>
+<body>
+
+<p id="message">Sedang keluar dari akun...</p>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase.js"></script>
+
+<script>
+async function logout() {
+    const message = document.getElementById('message');
+
+    try {
+        const { error } = await db.auth.signOut();
+
+        if (error) throw error;
+
+        message.textContent = 'Berhasil keluar. Mengalihkan...';
+
+        window.location.replace('index.html');
+
+    } catch (error) {
+        message.textContent = 'Logout gagal: ' + error.message;
+    }
+}
+
+logout();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Daftar | KampusMart</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="top">
+    <a class="brand" href="index.html">
+        Kampus<span>Mart</span>
+    </a>
+    <a href="index.html">Beranda</a>
+</header>
+
+<main class="auth">
+<div class="panel">
+    <p class="kicker">KOMUNITAS MAHASISWA UINSU</p>
+    <h1>Buat akun</h1>
+    <p class="muted">Mulai jual dan cari barang kebutuhanmu.</p>
+
+    <form id="registerForm" class="fields">
+
+        <label>Nama lengkap
+            <input type="text" id="name"
+                maxlength="100" required>
+        </label>
+
+        <label>Email
+            <input type="email" id="email" required>
+        </label>
+
+        <label>Nomor WhatsApp
+            <input type="tel" id="phone"
+                placeholder="08xxxxxxxxxx" required>
+        </label>
+
+        <label>Password
+            <input type="password" id="password"
+                minlength="8" required>
+        </label>
+
+        <label>Ulangi password
+            <input type="password" id="confirmPassword"
+                minlength="8" required>
+        </label>
+
+        <button class="btn" type="submit">
+            Daftar gratis →
+        </button>
+
+        <p id="message"></p>
+    </form>
+
+    <p>Sudah punya akun?
+        <a href="login.html">Login</a>
+    </p>
+
+    <small>Versi awal belum memverifikasi status mahasiswa UINSU.</small>
+</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase.js"></script>
+
+<script>
+const form = document.getElementById('registerForm');
+const message = document.getElementById('message');
+
+form.addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (name.length < 2 || name.length > 100) {
+        message.textContent = 'Nama harus terdiri dari 2–100 karakter.';
+        return;
+    }
+
+    if (phone.replace(/\D/g, '').length < 9) {
+        message.textContent = 'Nomor WhatsApp tidak valid.';
+        return;
+    }
+
+    if (password.length < 8) {
+        message.textContent = 'Password minimal 8 karakter.';
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        message.textContent = 'Konfirmasi password tidak cocok.';
+        return;
+    }
+
+    message.textContent = 'Sedang membuat akun...';
+
+    try {
+        const { data, error } = await db.auth.signUp({
+            email,
+            password,
+            options: {
+                data: { name, phone }
+            }
+        });
+
+        if (error) throw error;
+
+        if (!data.user) {
+            throw new Error('Akun belum berhasil dibuat.');
+        }
+
+        // Buat profil jika sesi langsung tersedia
+        if (data.session) {
+            const { error: profileError } = await db
+                .from('profiles')
+                .upsert({
+                    id: data.user.id,
+                    name,
+                    phone
+                });
+
+            if (profileError) throw profileError;
+
+            message.textContent = 'Pendaftaran berhasil! Mengalihkan...';
+
+            window.location.href = 'index.html';
+        } else {
+            message.textContent =
+                'Akun berhasil dibuat. Silakan verifikasi email, kemudian login.';
+            form.reset();
+        }
+
+    } catch (error) {
+        message.textContent = 'Pendaftaran gagal: ' + error.message;
+    }
+});
+</script>
+
+</body>
+</html>

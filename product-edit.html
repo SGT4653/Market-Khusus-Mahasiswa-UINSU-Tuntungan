@@ -1,0 +1,310 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit Barang | KampusMart</title>
+
+    <link rel="stylesheet" href="assets/style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/supabase.js"></script>
+</head>
+<body>
+
+<header class="top">
+    <a class="brand" href="index.html">Kampus<span>Mart</span></a>
+    <nav>
+        <a href="index.html">Beranda</a>
+        <a href="my-products.html">Barang Saya</a>
+    </nav>
+</header>
+
+<main class="form-page">
+    <a href="my-products.html">← Kembali</a>
+    <h1>Edit barang</h1>
+
+    <div class="panel wide">
+        <div id="message"></div>
+
+        <form id="editForm" class="fields" hidden>
+
+            <label>Nama barang
+                <input id="title" maxlength="150" minlength="3" required>
+            </label>
+
+            <label>Harga (Rp)
+                <input
+                    type="number"
+                    id="price"
+                    min="0"
+                    max="999999999999"
+                    step="1"
+                    required
+                >
+            </label>
+
+            <label>Kategori
+                <select id="category" required>
+                    <option value="Buku">Buku</option>
+                    <option value="Elektronik">Elektronik</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Perlengkapan Kos">Perlengkapan Kos</option>
+                    <option value="Alat Tulis">Alat Tulis</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </label>
+
+            <label>Kondisi
+                <select id="condition" required>
+                    <option value="Baru">Baru</option>
+                    <option value="Seperti Baru">Seperti Baru</option>
+                    <option value="Baik">Baik</option>
+                    <option value="Cukup">Cukup</option>
+                </select>
+            </label>
+
+            <label>Deskripsi
+                <textarea
+                    id="description"
+                    minlength="10"
+                    maxlength="5000"
+                    rows="5"
+                    required
+                ></textarea>
+            </label>
+
+            <div id="currentPhoto"></div>
+
+            <label>Ganti foto (opsional)
+                <input
+                    type="file"
+                    id="photo"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                >
+                <small>JPG, PNG, atau WEBP. Maksimal 3 MB.</small>
+            </label>
+
+            <button class="btn" id="submitBtn" type="submit">
+                Simpan perubahan
+            </button>
+        </form>
+    </div>
+</main>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const productId = params.get('id');
+
+const form = document.getElementById('editForm');
+const message = document.getElementById('message');
+const submitBtn = document.getElementById('submitBtn');
+
+let currentUser = null;
+let oldProduct = null;
+
+function showMessage(text, success = false) {
+    message.innerHTML = '';
+
+    const box = document.createElement('div');
+    box.className = success ? 'success' : 'error';
+    box.textContent = text;
+
+    message.appendChild(box);
+}
+
+function getPhotoUrl(path) {
+    if (!path) return null;
+
+    const { data } = db.storage
+        .from('produk')
+        .getPublicUrl(path);
+
+    return data.publicUrl;
+}
+
+async function loadProduct() {
+    try {
+        const { data: authData, error: authError } =
+            await db.auth.getUser();
+
+        if (authError || !authData.user) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        currentUser = authData.user;
+
+        if (!productId || !/^\d+$/.test(productId)) {
+            throw new Error('ID barang tidak valid.');
+        }
+
+        const { data, error } = await db
+            .from('products')
+            .select('*')
+            .eq('id', productId)
+            .eq('user_id', currentUser.id)
+            .single();
+
+        if (error || !data) {
+            throw new Error('Barang tidak ditemukan atau bukan milik akunmu.');
+        }
+
+        oldProduct = data;
+
+        document.getElementById('title').value = data.title || '';
+        document.getElementById('price').value = data.price ?? 0;
+        document.getElementById('category').value = data.category;
+        document.getElementById('condition').value = data.condition;
+        document.getElementById('description').value = data.description || '';
+
+        if (data.photo) {
+            const image = document.createElement('img');
+            image.className = 'edit-photo';
+            image.src = getPhotoUrl(data.photo);
+            image.alt = 'Foto barang saat ini';
+
+            document.getElementById('currentPhoto').appendChild(image);
+        }
+
+        form.hidden = false;
+
+    } catch (error) {
+        showMessage(error.message || 'Gagal mengambil data barang.');
+    }
+}
+
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Menyimpan...';
+
+    let newPhotoPath = null;
+
+    try {
+        const title = document.getElementById('title').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const price = Number(document.getElementById('price').value);
+        const category = document.getElementById('category').value;
+        const condition = document.getElementById('condition').value;
+        const photoFile = document.getElementById('photo').files[0];
+
+        const categories = [
+            'Buku', 'Elektronik', 'Fashion',
+            'Perlengkapan Kos', 'Alat Tulis', 'Lainnya'
+        ];
+
+        const conditions = [
+            'Baru', 'Seperti Baru', 'Baik', 'Cukup'
+        ];
+
+        if (title.length < 3 || title.length > 150) {
+            throw new Error('Nama barang harus 3–150 karakter.');
+        }
+
+        if (description.length < 10 || description.length > 5000) {
+            throw new Error('Deskripsi harus 10–5000 karakter.');
+        }
+
+        if (!Number.isFinite(price) || price < 0 || price > 999999999999) {
+            throw new Error('Harga tidak valid.');
+        }
+
+        if (!categories.includes(category) || !conditions.includes(condition)) {
+            throw new Error('Kategori atau kondisi tidak valid.');
+        }
+
+        let photo = oldProduct.photo;
+
+        if (photoFile) {
+            if (photoFile.size > 3 * 1024 * 1024) {
+                throw new Error('Foto maksimal 3 MB.');
+            }
+
+            const allowedTypes = [
+                'image/jpeg',
+                'image/png',
+                'image/webp'
+            ];
+
+            if (!allowedTypes.includes(photoFile.type)) {
+                throw new Error('Foto harus JPG, PNG, atau WEBP.');
+            }
+
+            const extension = {
+                'image/jpeg': 'jpg',
+                'image/png': 'png',
+                'image/webp': 'webp'
+            }[photoFile.type];
+
+            newPhotoPath =
+                currentUser.id + '/' + crypto.randomUUID() + '.' + extension;
+
+            const { error: uploadError } = await db.storage
+                .from('produk')
+                .upload(newPhotoPath, photoFile, {
+                    contentType: photoFile.type,
+                    upsert: false
+                });
+
+            if (uploadError) throw uploadError;
+
+            photo = newPhotoPath;
+        }
+
+        const { error: updateError } = await db
+            .from('products')
+            .update({
+                title,
+                description,
+                price,
+                category,
+                condition,
+                photo
+            })
+            .eq('id', productId)
+            .eq('user_id', currentUser.id);
+
+        if (updateError) throw updateError;
+
+        // Hapus foto lama setelah perubahan database berhasil.
+        if (
+            newPhotoPath &&
+            oldProduct.photo &&
+            oldProduct.photo.startsWith(currentUser.id + '/')
+        ) {
+            const { error: removeError } = await db.storage
+                .from('produk')
+                .remove([oldProduct.photo]);
+
+            if (removeError) {
+                console.warn('Foto lama belum berhasil dihapus:', removeError);
+            }
+        }
+
+        showMessage('Barang berhasil diperbarui!', true);
+
+        setTimeout(() => {
+            window.location.href = 'my-products.html';
+        }, 1000);
+
+    } catch (error) {
+        // Jika update gagal, hapus foto baru yang telanjur diunggah.
+        if (newPhotoPath) {
+            await db.storage.from('produk').remove([newPhotoPath]);
+        }
+
+        showMessage(error.message || 'Gagal memperbarui barang.');
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Simpan perubahan';
+    }
+});
+
+loadProduct();
+</script>
+
+</body>
+</html>
