@@ -102,7 +102,7 @@ form.addEventListener('submit', async function(event) {
     message.textContent = 'Sedang membuat akun...';
 
     try {
-        const { data, error } = await db.auth.signUp({
+        const { data, error } = await window.db.auth.signUp({
             email,
             password,
             options: {
