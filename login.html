@@ -44,8 +44,13 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/supabase.js"></script>
+<script src="supabase.js"></script>
 
+<script>
+console.log("Supabase:", typeof window.supabase);
+console.log("Database:", typeof window.db);
+</script>
+    
 <script>
 const form = document.getElementById('loginForm');
 const message = document.getElementById('message');
