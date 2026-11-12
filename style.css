@@ -546,39 +546,37 @@ button:hover, .btn:hover {
     background: #1da45f;
 }
 
-/* TIPS TRANSAKSI AMAN */
-.tips-aman {
-    background: #14251c !important;
-    color: #e5eee8 !important;
-    border: 1px solid #294536;
-    border-radius: 12px;
-    padding: 18px;
+/* HERO UTAMA */
+.hero {
+    background: #0b1711 !important;
+    color: #f1f5f2 !important;
 }
-/* KARTU BELANJA HEMAT DAN TIPS AMAN */
-.benefit,
-.benefit-card,
-.info-card,
-.safety-tip,
-.tips-aman,
-.trust-card {
+
+/* KARTU BELANJA LEBIH HEMAT */
+.hero-graphic {
     background: #14251c !important;
     color: #e5eee8 !important;
     border: 1px solid #294536 !important;
-    border-radius: 12px;
+    border-radius: 16px;
+    padding: 25px;
 }
 
-.benefit *,
-.benefit-card *,
-.info-card *,
-.safety-tip *,
-.tips-aman *,
-.trust-card * {
+.hero-graphic b,
+.hero-graphic small,
+.hero-graphic span {
     color: #e5eee8 !important;
 }
 
-.tips-aman h3,
-.tips-aman h4,
-.tips-aman p,
-.tips-aman strong {
+/* TIPS TRANSAKSI AMAN */
+.safety {
+    background: #14251c !important;
+    color: #e5eee8 !important;
+    border: 1px solid #294536 !important;
+    border-radius: 16px;
+    padding: 22px;
+}
+
+.safety b,
+.safety p {
     color: #e5eee8 !important;
 }
