@@ -452,3 +452,63 @@ footer {
     .detail-img { min-height: 250px; }
     .detail-grid h1 { font-size: 28px; }
 }
+
+/* ===== KAMPUSMART DARK GREEN THEME ===== */
+
+:root {
+    color-scheme: dark;
+}
+
+body {
+    background: #0b1511 !important;
+    color: #e5eee8 !important;
+}
+
+header, .top, nav {
+    background: #101f18 !important;
+    color: #e5eee8 !important;
+    border-color: #263b30 !important;
+}
+
+main, .auth {
+    background: #0b1511 !important;
+    color: #e5eee8 !important;
+}
+
+.panel, .card, .product-card, .form-card {
+    background: #14251c !important;
+    color: #e5eee8 !important;
+    border: 1px solid #294536 !important;
+}
+
+h1, h2, h3, h4, label {
+    color: #e5eee8 !important;
+}
+
+p, .muted, small {
+    color: #a9bdb0;
+}
+
+a {
+    color: #62d995;
+}
+
+input, textarea, select {
+    background: #0d1b14 !important;
+    color: #ffffff !important;
+    border: 1px solid #355541 !important;
+}
+
+input::placeholder, textarea::placeholder {
+    color: #81978a;
+}
+
+button, .btn {
+    background: #16834c !important;
+    color: #ffffff !important;
+    border: none;
+}
+
+button:hover, .btn:hover {
+    background: #1da45f !important;
+}
