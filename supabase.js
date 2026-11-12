@@ -1,12 +1,8 @@
-
 const SUPABASE_URL = "https://htvynquqpvodggjsrsnw.supabase.co";
 
-// Ganti dengan Publishable key asli dari Supabase
-const SUPABASE_ANON_KEY = "MASUKKAN_PUBLISHABLE_KEY";
+const SUPABASE_ANON_KEY = "sb_publishable_5x9C7abjXOyE8l2I852NXQ_5kqmMKu2";
 
 window.db = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_ANON_KEY
 );
-
-console.log("Supabase client:", window.db);
