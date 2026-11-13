@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -10,6 +9,16 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        .modern-icon {
+            width: 17px;
+            height: 17px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+    </style>
 </head>
 <body>
 
@@ -95,7 +104,7 @@
             </label>
 
             <button class="btn" id="submitBtn" type="submit">
-                Publikasikan Barang →
+                Publikasikan Barang <i data-lucide="arrow-right" class="modern-icon"></i>
             </button>
         </form>
     </div>
@@ -212,55 +221,4 @@ form.addEventListener('submit', async function(e) {
             const filePath =
                 user.id + '/' + crypto.randomUUID() + '.' + extension;
 
-            const { error: uploadError } = await window.db.storage
-                .from('produk')
-                .upload(filePath, photoFile, {
-                    contentType: photoFile.type,
-                    upsert: false
-                });
-
-            if (uploadError) throw uploadError;
-
-            uploadedPath = filePath;
-            photo = filePath;
-        }
-
-        const { error: insertError } = await window.db
-            .from('products')
-            .insert({
-                user_id: user.id,
-                title: title,
-                description: description,
-                price: price,
-                category: category,
-                condition: condition,
-                photo: photo,
-                status: 'Tersedia'
-            });
-
-        if (insertError) throw insertError;
-
-        showMessage('Barang berhasil dipublikasikan!', true);
-
-        setTimeout(() => {
-            window.location.href = 'my-products.html';
-        }, 1000);
-
-    } catch (error) {
-        // Hapus foto jika upload berhasil tetapi penyimpanan data gagal.
-        if (uploadedPath) {
-            await window.db.storage.from('produk').remove([uploadedPath]);
-        }
-
-        showMessage(error.message || 'Terjadi kesalahan.');
-
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Publikasikan Barang →';
-    }
-});
-
-checkLogin();
-</script>
-
-</body>
-</html>
+            const { error: uploadError } = await
