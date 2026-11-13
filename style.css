@@ -1,36 +1,102 @@
-
-:root {
-    --green-dark: #16834a;
-    --green-darker: #106638;
-    --green-light: #eaf7ef;
-    --text: #17251c;
-    --muted: #718077;
-    --border: #e5ebe7;
-    --bg: #ffffff;
-    --soft: #f7faf8;
-    --red: #d93636;
-    --radius: 16px;
+    border: 1px solid #294536 !important;
 }
 
-* { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    font-family: Inter, "Segoe UI", Arial, sans-serif;
-    color: var(--text);
-    background: var(--bg);
-    line-height: 1.6;
+h1, h2, h3, h4, label {
+    color: #e5eee8 !important;
 }
 
-a { color: var(--green-dark); text-decoration: none; }
-a:hover { color: var(--green-darker); }
+p, .muted, small {
+    color: #a9bdb0;
+}
 
-.top {
-    min-height: 76px;
-    padding: 14px max(5%, calc((100% - 1160px)/2));
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    border-bottom: 1px solid var(--border);
-    background
+a {
+    color: #62d995;
+}
+
+input, textarea, select {
+    background: #0d1b14 !important;
+    color: #ffffff !important;
+    border: 1px solid #355541 !important;
+}
+
+input::placeholder, textarea::placeholder {
+    color: #81978a;
+}
+
+button, .btn {
+    background: #16834c !important;
+    color: #ffffff !important;
+    border: none;
+}
+
+button:hover, .btn:hover {
+    background: #1da45f !important;
+}
+
+/* HERO SECTION - DARK GREEN */
+.hero {
+    background: #0b1711 !important;
+    color: #f1f5f2 !important;
+}
+
+.hero h1,
+.hero h2,
+.hero h3,
+.hero p,
+.hero strong,
+.hero b,
+.hero a {
+    color: #f1f5f2 !important;
+}
+
+.hero em,
+.hero span {
+    color: #70d99b;
+}
+
+.hero a {
+    background: #16834c;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.hero a:hover {
+    background: #1da45f;
+}
+
+/* HERO UTAMA */
+.hero {
+    background: #0b1711 !important;
+    color: #f1f5f2 !important;
+}
+
+/* KARTU BELANJA LEBIH HEMAT */
+.hero-graphic {
+    background: #14251c !important;
+    color: #e5eee8 !important;
+    border: 1px solid #294536 !important;
+    border-radius: 16px;
+    padding: 25px;
+}
+
+.hero-graphic b,
+.hero-graphic small,
+.hero-graphic span {
+    color: #e5eee8 !important;
+}
+
+/* TIPS TRANSAKSI AMAN */
+.safety {
+    background: #14251c !important;
+    color: #e5eee8 !important;
+    border: 1px solid #294536 !important;
+    border-radius: 16px;
+    padding: 22px;
+}
+
+.safety b,
+.safety p {
+    color: #e5eee8 !important;
+}
