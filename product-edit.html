@@ -10,6 +10,16 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        .modern-icon {
+            width: 17px;
+            height: 17px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+    </style>
 </head>
 <body>
 
@@ -87,6 +97,7 @@
             </label>
 
             <button class="btn" id="submitBtn" type="submit">
+                <i data-lucide="save" class="modern-icon"></i>
                 Simpan perubahan
             </button>
         </form>
@@ -304,7 +315,9 @@ form.addEventListener('submit', async function(e) {
 });
 
 loadProduct();
+
+lucide.createIcons();
 </script>
 
 </body>
-</html>
+</html>    
