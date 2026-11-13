@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -10,6 +10,16 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        .modern-product-icon {
+            width: 52px;
+            height: 52px;
+            stroke-width: 1.5;
+            color: #16834a;
+        }
+    </style>
 </head>
 <body>
 
@@ -29,7 +39,7 @@
 
     <div class="detail-grid" id="productDetail" hidden>
         <div class="detail-img" id="productImage">
-            <span>📦</span>
+            <i data-lucide="package" class="modern-product-icon"></i>
         </div>
 
         <section>
@@ -149,7 +159,8 @@ async function loadProduct() {
             image.src = getPhotoUrl(product.photo);
             image.alt = product.title;
             image.onerror = () => {
-                imageContainer.innerHTML = '<span>📦</span>';
+                imageContainer.innerHTML = '<i data-lucide="package" class="modern-product-icon"></i>';
+                lucide.createIcons();
             };
 
             imageContainer.innerHTML = '';
@@ -236,6 +247,8 @@ async function loadProduct() {
 
         detail.hidden = false;
 
+        lucide.createIcons();
+
     } catch (error) {
         showMessage(error.message || 'Gagal memuat detail barang.');
     }
@@ -246,3 +259,4 @@ loadProduct();
 
 </body>
 </html>
+```
