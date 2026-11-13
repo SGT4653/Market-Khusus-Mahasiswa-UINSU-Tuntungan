@@ -5,6 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Daftar | KampusMart</title>
     <link rel="stylesheet" href="style.css">
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        .modern-icon {
+            width: 17px;
+            height: 17px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+
+        .auth-icon {
+            width: 18px;
+            height: 18px;
+            vertical-align: middle;
+            margin-right: 6px;
+            color: #16834a;
+        }
+    </style>
 </head>
 <body>
 
@@ -12,7 +31,10 @@
     <a class="brand" href="index.html">
         Kampus<span>Mart</span>
     </a>
-    <a href="index.html">Beranda</a>
+    <a href="index.html">
+        <i data-lucide="house" class="modern-icon"></i>
+        Beranda
+    </a>
 </header>
 
 <main class="auth">
@@ -23,32 +45,43 @@
 
         <form id="registerForm" class="fields">
 
-            <label>Nama lengkap
+            <label>
+                <i data-lucide="user-round" class="auth-icon"></i>
+                Nama lengkap
                 <input type="text" id="name"
                     maxlength="100" required>
             </label>
 
-            <label>Email
+            <label>
+                <i data-lucide="mail" class="auth-icon"></i>
+                Email
                 <input type="email" id="email" required>
             </label>
 
-            <label>Nomor WhatsApp
+            <label>
+                <i data-lucide="phone" class="auth-icon"></i>
+                Nomor WhatsApp
                 <input type="tel" id="phone"
                     placeholder="08xxxxxxxxxx" required>
             </label>
 
-            <label>Password
+            <label>
+                <i data-lucide="lock" class="auth-icon"></i>
+                Password
                 <input type="password" id="password"
                     minlength="8" required>
             </label>
 
-            <label>Ulangi password
+            <label>
+                <i data-lucide="shield-check" class="auth-icon"></i>
+                Ulangi password
                 <input type="password" id="confirmPassword"
                     minlength="8" required>
             </label>
 
             <button class="btn" id="registerButton" type="submit">
-                Daftar gratis →
+                <i data-lucide="user-plus" class="modern-icon"></i>
+                Daftar gratis
             </button>
 
             <p id="message" role="status"></p>
@@ -108,46 +141,4 @@ form.addEventListener('submit', async function(event) {
     message.textContent = 'Sedang membuat akun...';
 
     try {
-        const { data, error } = await window.db.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                data: {
-                    name: name,
-                    phone: phone
-                }
-            }
-        });
-
-        if (error) throw error;
-
-        if (!data.user) {
-            throw new Error('Akun belum berhasil dibuat.');
-        }
-
-        if (data.session) {
-            message.textContent =
-                'Pendaftaran berhasil! Mengalihkan ke halaman utama...';
-
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1500);
-
-        } else {
-            message.textContent =
-                'Pendaftaran berhasil! Silakan periksa email untuk verifikasi sebelum login.';
-
-            form.reset();
-            button.disabled = false;
-        }
-
-    } catch (error) {
-        message.textContent = 'Pendaftaran gagal: ' + error.message;
-        button.disabled = false;
-    }
-});
-</script>
-
-</body>
-</html>
-```
+        const { data, error } = await window.db.auth.signUp
