@@ -45,11 +45,11 @@
             <div class="two">
                 <label>Harga (Rp)
                     <input
-                        type="number"
+                        type="text"
                         id="price"
-                        min="0"
-                        max="999999999999"
-                        step="1"
+                        name="price"
+                        placeholder="Contoh: 1.200.000"
+                        inputmode="numeric"
                         required
                     >
                 </label>
@@ -106,6 +106,17 @@ const form = document.getElementById('productForm');
 const message = document.getElementById('message');
 const submitBtn = document.getElementById('submitBtn');
 
+/* FORMAT HARGA OTOMATIS */
+const hargaInput = document.getElementById('price');
+
+hargaInput.addEventListener('input', function () {
+    const angka = this.value.replace(/\D/g, '');
+
+    this.value = angka
+        ? Number(angka).toLocaleString('id-ID')
+        : '';
+});
+
 function showMessage(text, success = false) {
     message.innerHTML = '';
     const box = document.createElement('div');
@@ -115,7 +126,7 @@ function showMessage(text, success = false) {
 }
 
 async function checkLogin() {
-    const { data, error } = await db.auth.getUser();
+    const { data, error } = await window.db.auth.getUser();
 
     if (error || !data.user) {
         alert('Silakan login terlebih dahulu.');
@@ -140,7 +151,12 @@ form.addEventListener('submit', async function(e) {
 
         const title = document.getElementById('title').value.trim();
         const description = document.getElementById('description').value.trim();
-        const price = Number(document.getElementById('price').value);
+
+        /* HAPUS TITIK SEBELUM MENYIMPAN HARGA */
+        const price = Number(
+            document.getElementById('price').value.replace(/\./g, '')
+        );
+
         const category = document.getElementById('category').value;
         const condition = document.getElementById('condition').value;
         const photoFile = document.getElementById('photo').files[0];
@@ -196,7 +212,7 @@ form.addEventListener('submit', async function(e) {
             const filePath =
                 user.id + '/' + crypto.randomUUID() + '.' + extension;
 
-            const { error: uploadError } = await db.storage
+            const { error: uploadError } = await window.db.storage
                 .from('produk')
                 .upload(filePath, photoFile, {
                     contentType: photoFile.type,
@@ -209,7 +225,7 @@ form.addEventListener('submit', async function(e) {
             photo = filePath;
         }
 
-        const { error: insertError } = await db
+        const { error: insertError } = await window.db
             .from('products')
             .insert({
                 user_id: user.id,
@@ -233,11 +249,11 @@ form.addEventListener('submit', async function(e) {
     } catch (error) {
         // Hapus foto jika upload berhasil tetapi penyimpanan data gagal.
         if (uploadedPath) {
-            await db.storage.from('produk').remove([uploadedPath]);
+            await window.db.storage.from('produk').remove([uploadedPath]);
         }
 
         showMessage(error.message || 'Terjadi kesalahan.');
-        
+
         submitBtn.disabled = false;
         submitBtn.textContent = 'Publikasikan Barang →';
     }
