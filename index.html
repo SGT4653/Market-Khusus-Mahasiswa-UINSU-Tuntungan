@@ -123,8 +123,7 @@ function escapeHTML(value) {
 }
 
 function formatRupiah(value) {
-    const angka = String(value ?? '0').replace(/\D/g, '');
-    return 'Rp ' + (Number(angka) || 0).toLocaleString('id-ID');
+    return 'Rp ' + Number(value || 0).toLocaleString('id-ID');
 }
 
 function getPhoto(photo) {
